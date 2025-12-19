@@ -1,0 +1,13 @@
+// ftth-viability-project/package.json (root)
+{
+  "name": "ftth-viability-project",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently \"npm run dev --prefix frontend\" \"npm run dev --prefix backend\"",
+    "deploy:frontend": "vercel --cwd frontend",
+    "deploy:backend": "vercel --cwd backend"
+  },
+  "devDependencies": {
+    "concurrently": "^8.0.0"
+  }
+}
