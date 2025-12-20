@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "elofiber",
+  "private_key_id": "3383bfb60e7731550cd1d65eff96c7626d756e93",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQC1ZdB2LUT1g5Ib\naeQJ2P4ZyA4mES8bZc746u7zyEhUkCMffUJBQzH5/5NDsRIyblT+5+7QoAsZIfoM\n64fN6S4P12yVyljla3ZgV3wLGwrWi7kVi4tCRpGK7HHUAg3N0e14L8X5dnXw12j5\n/xynsGbYsOrWP+DuJDlLVGXm2Dehb7EJMjpEGlmXHdYzxnENjnqQEycqzmAa+zv9\nwA8Yrfl3G5OvRa0rEhsmCScbVJqIUN5L8WDd/gTcn1TYOHFg0o1nU7/9iFgFYRzH\nOZieg8a95p1/FbryTbyaxBzOF+8qXut6fo0BM9vmIbUP761QT63wptqSpSaJx6I+\nlBrTYjPXAgMBAAECggEAQnaiGVK/5AcHpyS2yYbon3CmAnukW3EDkz+dOtRE8Dr5\nq4V9G6Vvr85dWl2MMc8sNFOttGIXfudsk4RO93q7BlHjtsRzquejcWxMhlMrtu1t\n7L960FdD53d3w3rXLPUAgdtbOeqWDx8WFxdKnARtwnKcMNEp7Id4OKodRiYtx+eh\njRa53QvcVA8JzpkhR4d9yPvKOwhghQl3OFaShmA0jA97vCWkpCcEeZaZIkVz1J8Z\neaCrWbr36wnT/8Es+G+h3EV6H+n7mQZrPkd48wdP/X6riL4BomOPNs7WhhJjlXuF\n+MGPSCN15AvMz/Zy6b29s04KRGeFF8FVOhcdI55v2QKBgQD5JQWmf3FQUBNqMA3Y\nA333aQ0REdvNTWNTLEe1bewjJy3IpnYwum2BaZCFAEZ6Q94G3XdLiL/BZtNdx0/E\n+5e1JlPfFp6ncGvYHSTdcUZbHZIMBXTyrufRlN8FyvdlsXes3OMgHTtO0K2Hp/+W\n9ayIb5dISlk/lXJ5OXPyhAj7aQKBgQC6Y5UHraKenSmg4azs2ZdClsiPCf0mEkGn\nKJWURDHey67JwPH6IEXAqKghprx1+KYZYPe8RsRxVbhb4cpMKWStALb5PhO0gUx+\nnbeVI0pR9jLWEHdlq5/a0ysy/OmgEeOezBg2mh0LNcVc/pI+gy9o+lQUNx+rUunc\nlKWw2CgNPwKBgQCQ8Ha/C7jyDgOdbONA3Zc0jYqqeYczgmfcBRCafZ44PRyndB+h\n7XKzLKSEm0pk6oKJ3+D8sktLyfQAxGiloe/51JhKWjBmHELA8QN3R+S0MRm7oJkO\nba4zALZV+mO+Z2XFzKLdFeRgz4mEN7m7KqT6omCSD56oHNsBpujLFwDasQKBgB9M\na5Efgig6YewnGT+ohjLjWQhT+BN1i1rDgOKl1O4Bq/crFDcZRj1E1P7Zndn9h/7I\n/rC5/XC+oTekobDKXqKCdTdDSlHMSIkWeOZtR6SdwAmcOEB1YmF/hkiImb6MYnme\n8g3xMSFZxSuJgAtJQiPRrV67pvDA+o5U08HvekJHAoGBAOATojhdkPBtPuvZWiuc\nKr4Nub9wRlv7SsMyzM1deAu0GtYZSRLX9vf9ySv9uRHh34FeJQTKvCfSHZCHvZxE\naeg76ZiRRBRQaR5nuiCf/lU79gaxFTu0lILFzUSwDJ9iTrqsR3kOFzV0cHvRmN7q\navJJyLFEwV5mUqGw5KKrX9By\n-----END PRIVATE KEY-----\n",
+  "client_email": "api-viabilidade@elofiber.iam.gserviceaccount.com",
+  "client_id": "100439770443638884546",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/api-viabilidade%40elofiber.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}
