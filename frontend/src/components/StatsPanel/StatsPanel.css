@@ -1,0 +1,248 @@
+.stats-panel {
+  background: white;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  box-shadow: var(--shadow-lg);
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid var(--border-color);
+}
+
+.panel-header h3 {
+  color: var(--dark-color);
+  font-size: 1.25rem;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.stat-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: #f9fafb;
+  border-radius: 0.75rem;
+  transition: transform 0.2s;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+}
+
+.stat-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 0.5rem;
+  font-size: 1.5rem;
+}
+
+.stat-icon.total {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.stat-icon.success {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.stat-icon.avg {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.stat-icon.time {
+  background: #e0e7ff;
+  color: #3730a3;
+}
+
+.stat-info {
+  flex: 1;
+}
+
+.stat-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--dark-color);
+}
+
+.stat-label {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.history-section {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border-color);
+}
+
+.history-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.history-header h4 {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--dark-color);
+}
+
+.clear-history-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: #fee2e2;
+  color: #991b1b;
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.clear-history-btn:hover {
+  background: #fecaca;
+}
+
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.history-item {
+  padding: 1rem;
+  background: #f9fafb;
+  border-radius: 0.75rem;
+  border: 1px solid var(--border-color);
+}
+
+.history-main {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.history-coords {
+  font-family: 'Monaco', 'Courier New', monospace;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--primary-color);
+}
+
+.history-time {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.history-details {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.history-input {
+  flex: 1;
+  margin-right: 1rem;
+}
+
+.truncate {
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.history-results .result-count {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.result-count.success {
+  color: #065f46;
+}
+
+.result-count.empty {
+  color: #991b1b;
+}
+
+.current-stats {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border-color);
+}
+
+.current-stats h4 {
+  color: var(--dark-color);
+  margin-bottom: 1rem;
+}
+
+.current-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 1rem;
+}
+
+.current-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.current-stat-label {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.current-stat-value {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--dark-color);
+  font-family: 'Monaco', 'Courier New', monospace;
+}
+
+@media (max-width: 768px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .current-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .history-details {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+  }
+  
+  .history-input {
+    margin-right: 0;
+  }
+}
