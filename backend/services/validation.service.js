@@ -32,7 +32,7 @@ class ValidationService {
 
     validateRadius(radius) {
         const defaultRadius = 300;
-        const maxRadius = 2000; // Raio máximo permitido
+        const maxRadius = 2000;
         
         if (!radius) return { isValid: true, radius: defaultRadius };
         
@@ -55,6 +55,31 @@ class ValidationService {
         }
         
         return { isValid: true, radius: radiusNum };
+    }
+    
+    validateBounds(north, south, east, west) {
+        const errors = [];
+        
+        if (north <= south) {
+            errors.push('North deve ser maior que south');
+        }
+        
+        if (east <= west) {
+            errors.push('East deve ser maior que west');
+        }
+        
+        if (north > 90 || south < -90) {
+            errors.push('Coordenadas de latitude fora do intervalo válido (-90 a 90)');
+        }
+        
+        if (east > 180 || west < -180) {
+            errors.push('Coordenadas de longitude fora do intervalo válido (-180 a 180)');
+        }
+        
+        return {
+            isValid: errors.length === 0,
+            errors
+        };
     }
 }
 

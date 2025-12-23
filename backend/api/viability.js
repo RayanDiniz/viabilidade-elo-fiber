@@ -10,12 +10,12 @@ router.use((req, res, next) => {
     next();
 });
 
-// Endpoint principal de viabilidade
+// Endpoint principal - viabilidade por coordenadas
 router.get('/viability', async (req, res) => {
     try {
         const { lat, lng, radius = 300 } = req.query;
         
-        // Validação das coordenadas
+        // Validação
         const coordValidation = ValidationService.validateCoordinates(lat, lng);
         if (!coordValidation.isValid) {
             return res.status(400).json({
@@ -24,7 +24,6 @@ router.get('/viability', async (req, res) => {
             });
         }
         
-        // Validação do raio
         const radiusValidation = ValidationService.validateRadius(radius);
         if (!radiusValidation.isValid) {
             return res.status(400).json({
@@ -43,7 +42,9 @@ router.get('/viability', async (req, res) => {
             finalRadius
         );
         
-        // Resposta estruturada
+        // Busca CTO mais próxima para informações adicionais
+        const ctoMaisProxima = await BigQueryService.getCTOMaisProxima(latitude, longitude);
+        
         res.json({
             success: true,
             metadata: {
@@ -52,6 +53,7 @@ router.get('/viability', async (req, res) => {
                 timestamp: new Date().toISOString(),
                 total_resultados: ctoResults.length
             },
+            cto_mais_proxima: ctoMaisProxima,
             viabilidade_geral: ctoResults.length > 0 ? 'VIÁVEL' : 'NÃO VIÁVEL',
             resultados: ctoResults,
             recomendacoes: this.gerarRecomendacoes(ctoResults)
@@ -67,27 +69,24 @@ router.get('/viability', async (req, res) => {
     }
 });
 
-// Endpoint completo de infraestrutura
-router.get('/infraestrutura', async (req, res) => {
+// Endpoint para busca por texto
+router.get('/buscar', async (req, res) => {
     try {
-        const { lat, lng } = req.query;
+        const { q } = req.query;
         
-        const validation = ValidationService.validateCoordinates(lat, lng);
-        if (!validation.isValid) {
-            return res.status(400).json({ error: validation.errors });
+        if (!q || q.trim().length < 3) {
+            return res.status(400).json({
+                error: 'Termo de busca deve ter pelo menos 3 caracteres'
+            });
         }
         
-        const { lat: latitude, lng: longitude } = validation.coordinates;
-        
-        const resultados = await BigQueryService.checkInfraestruturaCompleta(
-            latitude, 
-            longitude
-        );
+        const resultados = await BigQueryService.buscarCTOsPorTexto(q.trim());
         
         res.json({
             success: true,
-            consulta: { latitude, longitude },
-            ...resultados
+            termo_busca: q,
+            total_resultados: resultados.length,
+            resultados: resultados
         });
         
     } catch (error) {
@@ -95,10 +94,44 @@ router.get('/infraestrutura', async (req, res) => {
     }
 });
 
-// Endpoint para estatísticas (dashboard admin)
+// Endpoint para área do mapa
+router.get('/area', async (req, res) => {
+    try {
+        const { north, south, east, west } = req.query;
+        
+        // Validação das coordenadas da área
+        if (!north || !south || !east || !west) {
+            return res.status(400).json({
+                error: 'Coordenadas da área são obrigatórias (north, south, east, west)'
+            });
+        }
+        
+        const bounds = {
+            north: parseFloat(north),
+            south: parseFloat(south),
+            east: parseFloat(east),
+            west: parseFloat(west)
+        };
+        
+        const resultados = await BigQueryService.getCTOsPorArea(bounds);
+        
+        res.json({
+            success: true,
+            area: bounds,
+            total_ctos: resultados.length,
+            ctos: resultados
+        });
+        
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Endpoint de estatísticas
 router.get('/estatisticas', async (req, res) => {
     try {
-        const estatisticas = await BigQueryService.getEstatisticas();
+        const estatisticas = await BigQueryService.getEstatisticasCTOs();
+        
         res.json({
             success: true,
             ...estatisticas,

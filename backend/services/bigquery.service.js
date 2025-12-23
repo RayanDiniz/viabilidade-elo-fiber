@@ -1,6 +1,5 @@
 // backend/services/bigquery.service.js
 const BigQueryConfig = require('../config/bigquery.config');
-const { BigQuery } = require('@google-cloud/bigquery');
 
 class BigQueryService {
     constructor() {
@@ -9,26 +8,47 @@ class BigQueryService {
         this.views = this.config.getViews();
     }
 
+    /**
+     * Consulta CTOs próximas usando a nova view vw_viabilidade
+     * @param {number} latitude 
+     * @param {number} longitude 
+     * @param {number} radius 
+     * @returns {Promise<Array>}
+     */
     async checkCTOsProximity(latitude, longitude, radius = 300) {
-        // Consulta otimizada para sua view ctos_viabilidade_base
+        // Extrai coordenadas do campo geometry
         const query = `
             WITH cliente_location AS (
                 SELECT ST_GEOGPOINT(@longitude, @latitude) as point
+            ),
+            cto_locations AS (
+                SELECT 
+                    nome,
+                    descricao,
+                    -- Extrai coordenadas do campo geometry
+                    ST_GEOGPOINT(
+                        geometry.coordinates[OFFSET(0)],  -- longitude
+                        geometry.coordinates[OFFSET(1)]   -- latitude
+                    ) as cto_location,
+                    geometry.coordinates[OFFSET(0)] as longitude_cto,
+                    geometry.coordinates[OFFSET(1)] as latitude_cto
+                FROM ${this.config.getFullTableName(this.views.VIABILIDADE)}
+                WHERE geometry.coordinates IS NOT NULL
+                  AND ARRAY_LENGTH(geometry.coordinates) >= 2
             )
             SELECT 
-                cto_id,
+                nome as cto_id,
                 nome,
-                endereco,
-                capacidade_total,
-                capacidade_disponivel,
-                ST_DISTANCE(cl.point, cto_location) as distancia_metros,
-                ST_X(cto_location) as longitude_cto,
-                ST_Y(cto_location) as latitude_cto,
-                status,
-                data_instalacao
-            FROM ${this.config.getFullTableName(this.views.CTOS)} as c,
-                cliente_location as cl
-            WHERE ST_DWITHIN(cl.point, c.cto_location, @radius)
+                descricao as endereco,
+                ST_DISTANCE(cl.point, ct.cto_location) as distancia_metros,
+                ct.longitude_cto,
+                ct.latitude_cto,
+                -- Capacidade padrão (ajustar conforme seus dados)
+                48 as capacidade_total,
+                24 as capacidade_disponivel,  -- Exemplo
+                'ATIVA' as status
+            FROM cto_locations ct, cliente_location cl
+            WHERE ST_DWITHIN(cl.point, ct.cto_location, @radius)
             ORDER BY distancia_metros
             LIMIT 20;
         `;
@@ -58,34 +78,69 @@ class BigQueryService {
         }
     }
 
-    async checkPOPSProximity(latitude, longitude, radius = 1000) {
-        // Consulta para POPs (OLTs) próximas
+    /**
+     * Consulta detalhada da CTO mais próxima
+     */
+    async getCTOMaisProxima(latitude, longitude) {
         const query = `
             SELECT 
-                pop_id,
-                nome_pop,
-                endereco,
-                tipo_olt,
-                portas_disponiveis,
-                capacidade_total,
-                ST_DISTANCE(
-                    ST_GEOGPOINT(@longitude, @latitude),
-                    pop_location
-                ) as distancia_metros,
-                status
-            FROM ${this.config.getFullTableName(this.views.POPS)}
-            WHERE ST_DWITHIN(
+                nome as cto_id,
+                nome,
+                descricao as endereco,
+                geometry.coordinates[OFFSET(0)] as longitude,
+                geometry.coordinates[OFFSET(1)] as latitude,
+                geometry.type as tipo_geometria
+            FROM ${this.config.getFullTableName(this.views.VIABILIDADE)}
+            WHERE geometry.coordinates IS NOT NULL
+            ORDER BY ST_DISTANCE(
                 ST_GEOGPOINT(@longitude, @latitude),
-                pop_location,
-                @radius
+                ST_GEOGPOINT(
+                    geometry.coordinates[OFFSET(0)],
+                    geometry.coordinates[OFFSET(1)]
+                )
             )
-            ORDER BY distancia_metros
-            LIMIT 10;
+            LIMIT 1;
         `;
 
         const options = {
             query: query,
-            params: { latitude, longitude, radius },
+            params: { latitude, longitude },
+            location: this.config.location
+        };
+
+        const [job] = await this.bigquery.createQueryJob(options);
+        const [rows] = await job.getQueryResults();
+        return rows[0] || null;
+    }
+
+    /**
+     * Consulta todas as CTOs em uma área (para mapa)
+     */
+    async getCTOsPorArea(bounds) {
+        // bounds = { north, south, east, west }
+        const query = `
+            SELECT 
+                nome as cto_id,
+                nome,
+                descricao as endereco,
+                geometry.coordinates[OFFSET(0)] as longitude,
+                geometry.coordinates[OFFSET(1)] as latitude,
+                geometry.type as tipo_geometria
+            FROM ${this.config.getFullTableName(this.views.VIABILIDADE)}
+            WHERE geometry.coordinates IS NOT NULL
+              AND geometry.coordinates[OFFSET(1)] BETWEEN @south AND @north
+              AND geometry.coordinates[OFFSET(0)] BETWEEN @west AND @east
+            LIMIT 100;
+        `;
+
+        const options = {
+            query: query,
+            params: {
+                north: bounds.north,
+                south: bounds.south,
+                east: bounds.east,
+                west: bounds.west
+            },
             location: this.config.location
         };
 
@@ -94,21 +149,59 @@ class BigQueryService {
         return rows;
     }
 
-    async checkInfraestruturaCompleta(latitude, longitude) {
-        // Consulta completa: CTOs + POPs + Portos
-        const ctoPromise = this.checkCTOsProximity(latitude, longitude, 300);
-        const popPromise = this.checkPOPSProximity(latitude, longitude, 1000);
+    /**
+     * Estatísticas das CTOs
+     */
+    async getEstatisticasCTOs() {
+        const query = `
+            SELECT 
+                COUNT(*) as total_ctos,
+                COUNT(DISTINCT nome) as cto_unicas,
+                -- Média de coordenadas válidas
+                AVG(CASE 
+                    WHEN geometry.coordinates IS NOT NULL 
+                    AND ARRAY_LENGTH(geometry.coordinates) >= 2 
+                    THEN 1 ELSE 0 
+                END) * 100 as percentual_com_coordenadas
+            FROM ${this.config.getFullTableName(this.views.VIABILIDADE)};
+        `;
+
+        const [job] = await this.bigquery.createQueryJob({
+            query: query,
+            location: this.config.location
+        });
         
-        const [ctos, pops] = await Promise.all([ctoPromise, popPromise]);
-        
-        return {
-            cto_disponiveis: ctos.length,
-            pop_disponiveis: pops.length,
-            cto_mais_proxima: ctos.length > 0 ? ctos[0] : null,
-            pop_mais_proximo: pops.length > 0 ? pops[0] : null,
-            lista_ctos: ctos,
-            lista_pops: pops
+        const [rows] = await job.getQueryResults();
+        return rows[0];
+    }
+
+    /**
+     * Busca CTOs por nome ou descrição
+     */
+    async buscarCTOsPorTexto(texto) {
+        const query = `
+            SELECT 
+                nome as cto_id,
+                nome,
+                descricao as endereco,
+                geometry.coordinates[OFFSET(0)] as longitude,
+                geometry.coordinates[OFFSET(1)] as latitude
+            FROM ${this.config.getFullTableName(this.views.VIABILIDADE)}
+            WHERE (LOWER(nome) LIKE LOWER(@texto) 
+                   OR LOWER(descricao) LIKE LOWER(@texto))
+              AND geometry.coordinates IS NOT NULL
+            LIMIT 20;
+        `;
+
+        const options = {
+            query: query,
+            params: { texto: `%${texto}%` },
+            location: this.config.location
         };
+
+        const [job] = await this.bigquery.createQueryJob(options);
+        const [rows] = await job.getQueryResults();
+        return rows;
     }
 
     classificarViabilidade(distancia, capacidadeDisponivel) {
@@ -121,26 +214,6 @@ class BigQueryService {
         } else {
             return 'BAIXA - Fora do raio ou sem capacidade';
         }
-    }
-
-    async getEstatisticas() {
-        // Método para dashboard administrativo
-        const query = `
-            SELECT 
-                COUNT(*) as total_ctos,
-                SUM(CASE WHEN capacidade_disponivel > 0 THEN 1 ELSE 0 END) as cto_com_capacidade,
-                SUM(CASE WHEN capacidade_disponivel = 0 THEN 1 ELSE 0 END) as cto_sem_capacidade,
-                AVG(capacidade_disponivel) as capacidade_media
-            FROM ${this.config.getFullTableName(this.views.CTOS)}
-        `;
-
-        const [job] = await this.bigquery.createQueryJob({
-            query: query,
-            location: this.config.location
-        });
-        
-        const [rows] = await job.getQueryResults();
-        return rows[0];
     }
 }
 

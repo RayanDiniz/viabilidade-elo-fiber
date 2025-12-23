@@ -21,13 +21,12 @@ class BigQueryConfig {
         return `\`${this.projectId}.${this.datasetId}.${tableName}\``;
     }
 
+    // Agora temos apenas uma view principal
     getViews() {
         return {
-            CTOS: 'ctos_viabilidade_base', // Sua view principal
-            CTOS_DETAILS: 'iii\' ctos',    // View detalhada (escape da aspa)
-            POPS: 'pops',
-            PORTOS_CLASSIFICADOS: 'portos_classificados',
-            PORTOS_REDE: 'portos_rede'
+            VIABILIDADE: 'vw_viabilidade', // Sua nova view
+            // Views antigas (remover se não existirem mais)
+            CTOS_VIABILIDADE: 'vw_viabilidade' // Aponta para mesma view
         };
     }
 }
