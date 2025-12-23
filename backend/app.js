@@ -211,7 +211,24 @@ const NODE_ENV = process.env.NODE_ENV || 'development';
 
 // Função para inicialização segura
 async function startServer() {
-  try {
+ try {
+    console.log('🔧 Iniciando configuração...');
+    
+    // Testar conexão com BigQuery
+    const BigQueryConfig = require('./config/bigquery.config');
+    const isConnected = await BigQueryConfig.testConnection();
+    
+    if (!isConnected) {
+      console.error('❌ Não foi possível conectar ao BigQuery. Verifique as credenciais.');
+      
+      // No Vercel, continuamos mesmo com erro para ver logs
+      if (process.env.NODE_ENV === 'production') {
+        console.log('⚠️  Continuando em modo degradado...');
+      } else {
+        throw new Error('Falha na conexão com BigQuery');
+      }
+    }
+
     // Verificar variáveis de ambiente críticas
     if (!process.env.GCP_PROJECT_ID && NODE_ENV === 'production') {
       console.warn('⚠️  GCP_PROJECT_ID não configurado');
